@@ -1,24 +1,26 @@
 import axios from 'axios'
-const baseUrl = 'http://localhost:3003/'
+const baseUrl = 'http://127.0.0.1:3003/api/blogs'
 
 let token = null
 const setToken = newToken => {
-  token = `bearer ${newToken}`
+  token = (newToken) ? `bearer ${newToken}` : null
 }
 
-const getAll = () => {
-  const config =  { headers: { Authorization: token},}
-  const request = axios.get(baseUrl, config)
-  
-  return request.then(response => {console.log(request)
-    return (response.data)})
-}
+const getAll = async () => {
+  const config =  { headers: { Authorization: token}}
+  console.log("config:", config)
+  const response = await axios.get(baseUrl, config)
+  console.log(response.data)
+  return response.data
+  }
 
 
-const create = async newObject => {
-  const config =  { headers: { Authorization: token},}
+const create = async (newObject) => {
+  const config =  { headers: { Authorization: token}}
+  console.log("config addissä:", config)
   const response = await axios.post( baseUrl, newObject, config)
-  console.log(response)
+  console.log("status adistä", response.status)
+  console.log("response", response.data)
   return response.data
 }
 

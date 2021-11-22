@@ -1,22 +1,25 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import LoginForm from './components/loginform'
+import BlogForm from './components/blogform'
+import Togglable from './components/togglable.js'
 import Blogs from './components/blogs'
 import blogService from './services/blogs.js'
 import loginService from './services/login'
-import Notification from './components/notification.js'
+import NotificationMessage from './components/notification.js'
 
 
 const App = () => {
+
+
   const [blogs, setBlogs] = useState([])
 
-  const [newBlog, setNewBlog] = useState('')
-  const [newAuthor, setNewAuthor] = useState('')
-  const [newUrl, setNewUrl] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
 
-  const [errorMessage, setErrorMessage] = useState(null)
-
-  const [username, setUsername] = useState('')
-  const[password, setPassword] = useState('')
   const [user,setUser] = useState(null)
+
+  const blogFormRef = useRef()
+  const loginFormRef = useRef()
+
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
@@ -24,12 +27,13 @@ const App = () => {
       const user = JSON.parse(loggedUserJSON)
       setUser(user)
       blogService.setToken(user.token)
-      setErrorMessage(`Tervetuloa taas ${user.name}`) 
-      setTimeout(()=>{setErrorMessage(null)},2000)
+      setTimeout(setErrorMessage(`Tervetuloa taas ${user.name}`,2000)) 
+      setTimeout(()=>{setErrorMessage('')},5000)
+
     }
   }, [] )
 
-/*
+
   useEffect(() => {    
     blogService.getAll()
     .then(blogs => { 
@@ -38,29 +42,31 @@ const App = () => {
     .catch(function (error) {
       console.log("Error", error)
       setErrorMessage(error.message) 
-      setTimeout(()=>{setErrorMessage(null)},5000)
+      setTimeout(()=>{setErrorMessage('')},5000)
       throw error
     })
   }, [])
 
-  */
-  const handleLogin = async (event) => {
-    event.preventDefault()
+  
+  const handleLogin = async (username,password) => { 
     console.log('logging with', username, password)
     try{
-      const user = await loginService.login({ username,password })
-      console.log(user.status)
-      if (user.status === 200){
-        window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user))
-        blogService.setToken(user.token)
-        setUser(user)
-        setUsername('')
-        setPassword('')
+      const response = await loginService.login({ username,password })
+      console.log("response status:",response.status)
+      console.log("response data:",response.data)
+      if (response.status === 200){
+        window.localStorage.setItem('loggedBlogappUser', JSON.stringify(response.data))
+        console.log("Asetetaan local storakeen",response.data)
+        blogService.setToken(response.data.token)
+        setUser(response.data)
+        loginFormRef.current.toggleVisibility()
+  
+        return true
       }
     } catch(error) {
       console.log('wrong credentials')
       setErrorMessage("Väärä tunnus tai salasana") 
-      setTimeout(()=>{setErrorMessage(null)},5000)
+      setTimeout(()=>{setErrorMessage('')},5000)
     }
   }
 
@@ -68,79 +74,59 @@ const App = () => {
     setUser(null)
     window.localStorage.removeItem('loggedBlogappUser')
   }
-  const handleBlogChange = (event) => {
-    setNewBlog(event.target.value)
-  }
-  const handleAuthorChange = (event) => {
-    setNewAuthor(event.target.value)
-  }
-  const handleUrlChange = (event) => {
-    setNewUrl(event.target.value)
+
+  const logout_button = () => {
+    if (user !== null)  return (      
+      <div>
+        <p>{user.name} logged in 
+              <button onClick = {handleLogout}> Logout </button>
+        </p>
+      </div>
+    )
   }
 
-  const addBlog = (event) => {
-    event.preventDefault()
-    const blogToCreate = {
-      'title': newBlog,
-      'author': newAuthor,
-      'url': newUrl
-    }
-    blogService.create(blogToCreate)
-    .then(returnedBlog => {
-      setBlogs( blogs.concat(returnedBlog))
-      setNewBlog('')
-      // EI ERROR MUTTA KÄYTETÄÄN TÄTÄ
+  const addBlog = async (blogToCreate) => {
+    
+    blogFormRef.current.toggleVisibility()
+  
+    try{
+      console.log("Luodaan uusi", blogToCreate)
+      const returnedBlog = await blogService.create(blogToCreate)
+     
+      setBlogs( blogs.concat(returnedBlog))      
       setErrorMessage("Uusi tietue lisätty") 
-      setTimeout(()=>{setErrorMessage(null)},5000)
-    })
-    .catch( (error) => {
+      setTimeout(()=>{setErrorMessage('')},5000)
+    }
+    catch(error){
       console.log("Joku virhe", error)
       setErrorMessage(error) 
-      setTimeout(()=>{setErrorMessage(null)},5000)
-    })
+      setTimeout(()=>{setErrorMessage('')},5000)
+    }
   }
 
+
   const loginForm = () =>(
-  <div>
-    <h2>login</h2>
-      <form onSubmit={handleLogin} >
-
-        <div>
-          username <input type="text" value={username} name="Username" 
-          onChange={({target}) =>  setUsername(target.value)}/>          
-        </div>
-        <div>
-          password <input type="password" value={password} name = "Password"
-          onChange={({target}) => setPassword(target.value)} />
-        </div>
-
-        <button type="submit">login</button>
-        </form>
-  </div>
+    <Togglable buttonLabel = 'lggin' ref = {loginFormRef} >
+      <LoginForm handleLogin = {handleLogin} />
+   </Togglable>
   )
 
   const blogForm = () => (  
-    <form onSubmit={addBlog}>
-      <p>Blog<input type ="text" value={newBlog} 
-      onChange={handleBlogChange} /> </p>
-      <p>Author<input type ="text" value={newAuthor} 
-      onChange={handleAuthorChange} /></p>
-      <p>Url<input type ="text" value={newUrl} 
-      onChange={handleUrlChange} /></p>
-      <button type="submit">save</button>
-    </form>
+    <Togglable buttonLabel='create new' ref = {blogFormRef}>
+      <BlogForm addBlog = {addBlog} />
+    </Togglable>
   )
-  
+
+
   return (
     <div>
-      <Notification message={errorMessage}/>
 
-      {user === null ? loginForm() : 
-      <div>
-        <p>{user.name} logged in <button onClick = {handleLogout}> Logout </button>
-        </p>
-      </div>
-      }
+      <NotificationMessage message={errorMessage} />      
+
+      {loginForm()}
+
+      {logout_button() }
+
       {user !== null && blogForm()}
       
       <Blogs user={user} blogs={blogs} /> 
@@ -148,6 +134,7 @@ const App = () => {
     </div>
   )
 }
+
 
 
 export default App
