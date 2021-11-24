@@ -1,11 +1,11 @@
 import React, {useState} from 'react'
 
 
-const Blogs = ({user, blogs}) => { 
+const Blogs = ({user, blogs, updateBlog}) => { 
     
     if (user !== null) { 
         return(
-            blogs.map(n=> <Rivi key = {n.id} n = {n} author = {n.author} likes = {n.likes} url = {n.url} />)
+            blogs.map(n=> <Rivi key = {n.id} n = {n} author = {n.author} likes = {n.likes} url = {n.url} updateBlog = {updateBlog} />)
         )
     }
     else
@@ -13,7 +13,7 @@ const Blogs = ({user, blogs}) => {
 }
 
 
-const Rivi = (n,author, likes, url) => { 
+const Rivi = ({n,author, likes, url, updateBlog}) => { 
     const [details, set_detail_level] = useState(false)
 
     const toggleDetails = () => { set_detail_level(!details)} 
@@ -25,6 +25,13 @@ const Rivi = (n,author, likes, url) => {
         text = 'hide'
     }
 
+    const addLike = (event) => {
+        event.preventDefault()
+        const newData = n
+        newData['likes'] = n['likes'] +1
+        updateBlog(n.id, newData)
+    }
+
     return( 
     <div>        
         <div> 
@@ -33,11 +40,13 @@ const Rivi = (n,author, likes, url) => {
         </div>
         <div style={style} >
             <p>Url:{n.url}</p>
-            <p>likes:{n.likes}</p>
+            <p>likes:{n.likes} <button  onClick={addLike}> like </button>
+            </p>
             <p> Tuottaja: {n.author} </p>
         </div>
     </div>
     )
+
 }
 
 export default Blogs

@@ -104,6 +104,12 @@ const App = () => {
     }
   }
 
+  const updateBlog = async (id, newData) => {
+    const response = await blogService.update(id, newData)
+    
+    setErrorMessage("Tietue lisätty") 
+    setTimeout(()=>{setErrorMessage('')},5000)
+  }
 
   const loginForm = () =>(
     <Togglable buttonLabel = 'lggin' ref = {loginFormRef} >
@@ -129,7 +135,7 @@ const App = () => {
 
       {user !== null && blogForm()}
       
-      <Blogs user={user} blogs={blogs} /> 
+      <Blogs user={user} blogs={blogs} updateBlog = {updateBlog} /> 
 
     </div>
   )
