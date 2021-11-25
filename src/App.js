@@ -33,8 +33,7 @@ const App = () => {
     }
   }, [] )
 
-
-  useEffect(() => {    
+  const updateAllBlogs = () => {    
     blogService.getAll()
     .then(blogs => { 
       console.log('promise fullfilled')
@@ -45,7 +44,9 @@ const App = () => {
       setTimeout(()=>{setErrorMessage('')},5000)
       throw error
     })
-  }, [])
+  }
+
+  useEffect( updateAllBlogs , [])
 
   
   const handleLogin = async (username,password) => { 
@@ -111,6 +112,19 @@ const App = () => {
     setTimeout(()=>{setErrorMessage('')},5000)
   }
 
+  const deleteBlog = async (id) => {
+    const response = await blogService.deleteRecord(id)
+    if (response === 204){
+      setErrorMessage("Tietue poistettu") 
+      setTimeout(()=>{setErrorMessage('')},5000)
+      updateAllBlogs()
+      }
+    else {
+      setErrorMessage("Poisto ei onnistunut") 
+      setTimeout(()=>{setErrorMessage('')},5000)
+      }
+  }
+
   const loginForm = () =>(
     <Togglable buttonLabel = 'lggin' ref = {loginFormRef} >
       <LoginForm handleLogin = {handleLogin} />
@@ -135,7 +149,7 @@ const App = () => {
 
       {user !== null && blogForm()}
       
-      <Blogs user={user} blogs={blogs} updateBlog = {updateBlog} /> 
+      <Blogs user={user} blogs={blogs} updateBlog={updateBlog} deleteBlog={deleteBlog}/> 
 
     </div>
   )

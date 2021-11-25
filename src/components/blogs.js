@@ -1,11 +1,11 @@
 import React, {useState} from 'react'
 
 
-const Blogs = ({user, blogs, updateBlog}) => { 
+const Blogs = ({user, blogs, updateBlog, deleteBlog}) => { 
     
     if (user !== null) { 
         return(
-            blogs.map(n=> <Rivi key = {n.id} n = {n} author = {n.author} likes = {n.likes} url = {n.url} updateBlog = {updateBlog} />)
+            blogs.map(n=> <Rivi key = {n.id} n = {n} author = {n.author} likes = {n.likes} url = {n.url} updateBlog={updateBlog} deleteBlog={deleteBlog}/>)
         )
     }
     else
@@ -13,7 +13,7 @@ const Blogs = ({user, blogs, updateBlog}) => {
 }
 
 
-const Rivi = ({n,author, likes, url, updateBlog}) => { 
+const Rivi = ({n,author, likes, url, updateBlog, deleteBlog}) => { 
     const [details, set_detail_level] = useState(false)
 
     const toggleDetails = () => { set_detail_level(!details)} 
@@ -32,6 +32,11 @@ const Rivi = ({n,author, likes, url, updateBlog}) => {
         updateBlog(n.id, newData)
     }
 
+    const del = (event) => {
+        event.preventDefault()
+        deleteBlog(n.id)
+    }
+
     return( 
     <div>        
         <div> 
@@ -43,6 +48,9 @@ const Rivi = ({n,author, likes, url, updateBlog}) => {
             <p>likes:{n.likes} <button  onClick={addLike}> like </button>
             </p>
             <p> Tuottaja: {n.author} </p>
+        </div>
+        <div>
+            <button  onClick={del}> Poista </button>
         </div>
     </div>
     )
