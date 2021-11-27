@@ -5,7 +5,7 @@ const Blogs = ({ user, blogs, updateBlog, deleteBlog }) => {
 
   if (user !== null) {
     return(
-      blogs.map(n => <Rivi key = {n.id} updateBlog={updateBlog} deleteBlog={deleteBlog}/>)
+      blogs.map(n => <Rivi key = {n.id} n={n} updateBlog={updateBlog} deleteBlog={deleteBlog}/>)
     )
   }
   else
@@ -22,7 +22,7 @@ const Rivi = ({ n, updateBlog, deleteBlog }) => {
   let text = 'Show'
   if (details){
     style = { display: '' }
-    text = 'hide'
+    text = 'Hide'
   }
 
   const addLike = (event) => {
