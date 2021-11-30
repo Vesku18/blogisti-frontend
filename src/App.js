@@ -20,16 +20,16 @@ const App = () => {
   const blogFormRef = useRef()
   const loginFormRef = useRef()
 
+  let loginStatus = user === null ? true : false
 
-  useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
+  useEffect(async () => {
+    const loggedUserJSON = await window.localStorage.getItem('loggedBlogappUser')
     if(loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       setUser(user)
       blogService.setToken(user.token)
       setTimeout(setErrorMessage(`Tervetuloa taas ${user.name}`,2000))
       setTimeout(() => {setErrorMessage('')},5000)
-
     }
   }, [] )
 
@@ -73,6 +73,7 @@ const App = () => {
   const handleLogout = () => {
     setUser(null)
     window.localStorage.removeItem('loggedBlogappUser')
+    blogService.getAll()
   }
 
   const logout_button = () => {
@@ -106,9 +107,10 @@ const App = () => {
 
   const updateBlog = async (id, newData) => {
     const response = await blogService.update(id, newData)
-    setErrorMessage('Tietue lisätty')
+    console.log(response)
+    setErrorMessage('Tykkäät siis tosiaan siitä')
     setTimeout(() => {setErrorMessage('')},5000)
-    return response.data
+    return response
   }
 
   const deleteBlog = async (id) => {
@@ -124,14 +126,15 @@ const App = () => {
     }
   }
 
-  const loginForm = () => (
-    <Togglable buttonLabel = 'lggin' ref = {loginFormRef} >
+  const loginForm = (loginStatus) => (
+    <Togglable buttonLabel = 'login' ref = {loginFormRef} defaultStatus={loginStatus} log={loginStatus}>
       <LoginForm handleLogin = {handleLogin} />
     </Togglable>
   )
 
+
   const blogForm = () => (
-    <Togglable buttonLabel='create new' ref = {blogFormRef}>
+    <Togglable buttonLabel='create new' ref = {blogFormRef} defaultStatus={false}>
       <BlogForm addBlog = {addBlog} />
     </Togglable>
   )
@@ -142,7 +145,7 @@ const App = () => {
 
       <NotificationMessage message={errorMessage} />
 
-      {loginForm()}
+      {loginForm({ loginStatus })}
 
       {logout_button() }
 

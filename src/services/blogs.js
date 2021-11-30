@@ -29,7 +29,7 @@ const update = (id,newData) => {
   const config =  { headers: { Authorization: token } }
   const response = axios.put(`${baseUrl}/${id}`, newData, config)
   console.log('update done', response)
-  return response.data
+  return response
 }
 
 const deleteRecord = async (id) => {
